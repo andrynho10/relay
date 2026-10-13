@@ -27,8 +27,10 @@ Las decisiones de arquitectura están en `docs/adr/`. No contradigas un ADR acep
 - IA: Claude API vía capa `LLMGateway` (modelos `claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`)
 - Embeddings: proveedor detrás de interfaz `Embedder` (ver ADR)
 - PII: Microsoft Presidio + reconocedores propios (determinístico, sin LLM)
-- Auth: WorkOS (SSO/SCIM empresarial). Billing: Stripe (modo test, cobro por uso)
-- Infra: AWS (ECS Fargate, RDS, SQS, S3, CloudFront + WAF, Secrets Manager, KMS), Terraform
+- Auth: WorkOS AuthKit (SSO/SCIM empresarial: Roadmap). Billing: Stripe (Roadmap)
+- Infra: AWS (ECS Fargate, RDS, SQS, S3, CloudFront, Secrets Manager, KMS; WAF: Roadmap), Terraform
+- Alcance: núcleo vs. Roadmap según la "línea de corte CV" (SPEC §10.0, ADR-0007). Nada de Roadmap
+  se implementa sin mi aprobación.
 - CI/CD: GitHub Actions con OIDC hacia AWS (sin llaves de larga duración)
 - Observabilidad: OpenTelemetry, Sentry, trazas LLM en Langfuse
 - Local: Docker Compose replica todos los servicios
@@ -39,8 +41,8 @@ Las decisiones de arquitectura están en `docs/adr/`. No contradigas un ADR acep
 - `make dev` — levanta el entorno local
 - `make check` — lint + tipos + tests unitarios
 - `make test-integration` — tests contra Postgres/Redis reales en contenedores
-- `make evals` — suite de evaluación de calidad de IA
-- `make redteam` — suite de ataques (prompt injection, cross-tenant, escalamiento)
+- `make evals` — suite de evaluación de calidad de IA (desde Fase 1)
+- `make redteam` — suite de ataques (prompt injection, cross-tenant, escalamiento) (desde Fase 3)
 
 ## Reglas no negociables
 
@@ -85,7 +87,12 @@ Costo y confiabilidad
 - No confíes en tu memoria para APIs de librerías o servicios que cambian: verifica la documentación
   oficial de la versión fijada antes de usarlas, y dime qué verificaste.
 - Si una tarea crece más de lo planificado o te atascas tras 2 intentos, detente y pregúntame.
-- Nunca uses credenciales de producción. Tu entorno solo tiene acceso a local y a la cuenta AWS de dev.
+- Nunca uses credenciales de producción. Tu entorno solo tiene acceso a local y al proyecto AWS `dev`
+  (credenciales temporales vía `aws login`). El desarrollo diario es local; `dev` solo para lo que no se
+  puede emular, y lo que crees ahí se destruye después de usarlo. `staging` solo se toca desde GitHub
+  Actions (OIDC), salvo `infra/bootstrap`, que ejecuto yo con mis credenciales una vez por proyecto.
+  `prod` nunca se aplica. Antes de cualquier `terraform`/`aws`, verifica la cuenta con
+  `aws sts get-caller-identity`.
 
 ## Git (detalle en SPEC §13)
 
