@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/secrets/**)",
+      "Read(~/.aws/**)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(terraform destroy:*)",
+      "Bash(rm -rf:*)"
+    ],
+    "ask": [
+      "Bash(terraform apply:*)",
+      "Bash(git push:*)",
+      "Bash(aws:*)",
+      "Bash(gh pr merge:*)"
+    ]
+  }
+}
