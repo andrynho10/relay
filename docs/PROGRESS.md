@@ -5,7 +5,7 @@
 
 **Última actualización:** 2026-10-13
 **Fase actual:** 0 — Fundaciones · Plan: `docs/plans/phase-0.md` (aprobado y re-planificado por costo 2026-10-13)
-**Rama activa / PR abierto:** `docs/phase-0-plan` (T0) — PR #1
+**Rama activa / PR abierto:** `docs/phase-0-plan-v2` (T0) — PR #2 (reemplaza al #1, bloqueado por un commit sin firma)
 
 ## Hecho en esta fase
 - Kickoff: resumen, riesgos y decisiones de SPEC §12 (devcontainer, repo público).
@@ -15,7 +15,7 @@
 - Gestión de AWS documentada: modelo de cuenta, matriz de acceso, propósito de `dev`, secretos.
 
 ## En curso
-- Tarea: T0 — esperando revisión y squash merge del PR #1.
+- Tarea: T0 — esperando revisión y squash merge del PR #2.
 
 ## Siguiente
 1. T1 `chore/repo-hygiene`.
@@ -53,6 +53,8 @@
 - Host Windows sin `make`, Node, Terraform ni aws CLI; WSL no registrado → todo pasa por el devcontainer.
 - `gh` está en `C:\Program Files\GitHub CLI\` y no aparece en el PATH de sesiones abiertas antes de instalarlo.
 - El remoto no tenía `main` al principio; la primera rama subida quedó como default (ya corregido).
+- El ruleset exige firma en **todos** los commits del PR, aunque se haga squash: un solo commit sin firmar
+  bloquea el merge. Se arregla con una rama nueva + cherry-pick firmado, nunca con force push.
 - La firma de commits desde la shell del agente falla si la clave no está en el ssh-agent de Windows
   (`ssh-add -l` con el binario de `C:\Windows\System32\OpenSSH`).
 - `aws login` usa la sesión elegida en el navegador, no la del perfil → verificar con
