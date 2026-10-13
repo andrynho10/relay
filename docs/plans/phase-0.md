@@ -38,7 +38,9 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
       then the Budget action at 20 USD and Cost Anomaly Detection.
 - [ ] Run `infra/bootstrap` once per project (`dev`, `staging`) following the runbook, and load the
       staging Anthropic key with `aws secretsmanager put-secret-value`.
-- [ ] Apply the `main` ruleset (T13).
+- [x] Baseline `main` ruleset `main-protection` applied 2026-10-13 (id 25035606): no deletion, no force
+      push, PR required (0 approvals), squash only, linear history, signed commits, resolved conversations,
+      no bypass. Required status checks are added in T13.
 
 ## Tasks (one branch + PR each)
 - [ ] **T0 `docs/phase-0-plan`** — this file; SPEC re-scoping; update `docs/PROGRESS.md` and CLAUDE.md.
@@ -96,7 +98,8 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
 - [ ] **T12 `docs/threat-model-v1`** — STRIDE per component and data flow, with planned mitigations per phase,
       including the no-NAT network, the account model and access matrix, and the bootstrap exception
       (human admin credentials, once per project) as an explicit risk with its controls.
-- [ ] **T13 `chore/phase-0-close`** — `main` ruleset JSON (existing checks only), update CLAUDE.md
+- [ ] **T13 `chore/phase-0-close`** — add required status checks (existing ones only) to the `main-protection`
+      ruleset and version it as `.github/rulesets/main.json`; update CLAUDE.md
       (real commands), PROGRESS, BACKLOG review, manual signed tag + `gh release create v0.1.0` with notes.
 
 ## ADRs (only real decisions)
