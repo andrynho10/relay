@@ -5,12 +5,13 @@
 
 **Última actualización:** 2026-10-13
 **Fase actual:** 0 — Fundaciones · Plan: `docs/plans/phase-0.md` (aprobado y re-planificado por costo 2026-10-13)
-**Rama activa / PR abierto:** `docs/initial-adrs` (T2)
+**Rama activa / PR abierto:** `chore/devcontainer` (T2b)
 
 ## Hecho en esta fase
 - Kickoff: resumen, riesgos y decisiones de SPEC §12 (devcontainer, repo público).
 - T0: plan de Fase 0 en `docs/plans/phase-0.md` (PR #2, mergeado).
 - T1: higiene del repo, pre-commit, README, `.env.example`, licencia MIT (PR #3, mergeado).
+- T2: ADRs 0001–0009 (PR #4, mergeado).
 - Re-planificación por costo: dos ambientes aplicados, staging efímero,
   seguridad mínima en CI, release manual, red sin NAT. SPEC v0.2 y CLAUDE.md ajustados.
 - Gestión de AWS documentada: modelo de cuenta, matriz de acceso, propósito de `dev`, secretos.
@@ -18,11 +19,11 @@
 - Ruleset básico de `main` aplicado (`main-protection`).
 
 ## En curso
-- Tarea: T2 — ADRs 0001–0009 escritos (0006, 0008 y 0009 *Propuestos*). Esperando revisión de Andrés,
-  en especial ADR-0009, antes de empezar T2b (devcontainer).
+- Tarea: T2b — devcontainer hecho y probado fuera de VS Code (build, versiones, hooks, firma simulada).
+  Falta que Andrés lo abra en VS Code y haga un commit firmado (ver ADR-0009, "Commit signing").
 
 ## Siguiente
-1. T2b `chore/devcontainer`, tras la revisión del ADR-0009.
+1. T3 `feat/api-skeleton`, después de cerrar T2b.
 2. Antes de T9: upgrade a plan pago, proyectos `dev`/`staging` con spend limit, Budgets 10/25/40 USD.
 3. Meta inmediata: cerrar el hito 1 (fases 0 + 1, release `v0.2.0`) lo antes posible.
 
@@ -75,3 +76,6 @@
 - `pre-commit` no está en el host: usar `uvx pre-commit@4.6.2 run --all-files` hasta tener el devcontainer.
 - VS Code copia el `.gitconfig` del host al devcontainer: sus rutas de Windows (`gpg.ssh.program`,
   clave de firma) rompen la firma dentro del contenedor salvo que se sobrescriban (ADR-0009).
+- `check-json` no acepta JSONC: `devcontainer.json` está excluido de ese hook.
+- Abrir la carpeta del host en el contenedor comparte `.git/hooks`: los commits desde el host
+  necesitan `pre-commit` en el PATH del host (`uv tool install pre-commit==4.6.2`).

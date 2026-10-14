@@ -1,0 +1,48 @@
+// Development environment (ADR-0009). Recommended on Windows and macOS: open with
+// "Dev Containers: Clone Repository in Container Volume" for native file performance.
+{
+  "name": "relay",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "vscode",
+
+  // Commit signing inside the container: the host ssh-agent is forwarded by VS Code, so the
+  // private key never enters the container. GIT_CONFIG_* variables take precedence over every
+  // git config file, overriding the Windows paths in the host .gitconfig that VS Code copies in.
+  // RELAY_GIT_SIGNING_KEY is set once on the host: "key::" followed by the signing public key.
+  "containerEnv": {
+    "GIT_CONFIG_COUNT": "4",
+    "GIT_CONFIG_KEY_0": "gpg.format",
+    "GIT_CONFIG_VALUE_0": "ssh",
+    "GIT_CONFIG_KEY_1": "gpg.ssh.program",
+    "GIT_CONFIG_VALUE_1": "ssh-keygen",
+    "GIT_CONFIG_KEY_2": "user.signingkey",
+    "GIT_CONFIG_VALUE_2": "${localEnv:RELAY_GIT_SIGNING_KEY}",
+    "GIT_CONFIG_KEY_3": "commit.gpgsign",
+    "GIT_CONFIG_VALUE_3": "true",
+    "UV_CACHE_DIR": "/home/vscode/.cache/uv",
+    "PRE_COMMIT_HOME": "/home/vscode/.cache/pre-commit"
+  },
+
+  // Named volumes: credentials and caches survive rebuilds and never touch the host filesystem.
+  // The host ~/.aws is never mounted (ADR-0008): only the `dev` profile lives here.
+  "mounts": [
+    "source=relay-aws,target=/home/vscode/.aws,type=volume",
+    "source=relay-gh,target=/home/vscode/.config/gh,type=volume",
+    "source=relay-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+    "source=relay-pre-commit-cache,target=/home/vscode/.cache/pre-commit,type=volume"
+  ],
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "hashicorp.terraform",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

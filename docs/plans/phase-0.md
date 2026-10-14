@@ -52,7 +52,7 @@ with OIDC. Phase 0 is the first half of **milestone 1** (SPEC §10.0); the cash 
       README template. Verify Anthropic workspace spend limits in the official docs.
       *Done notes:* Prettier moves to T5 as a local hook (`pre-commit/mirrors-prettier` is archived);
       `.env.example` is created by Andrés because `.claude/settings.json` denies the agent `Read(./.env.*)`.
-- [ ] **T2 `docs/initial-adrs`** — ADRs 0001–0009 (list below). ADR-0009 is reviewed with Andrés before T2b.
+- [x] **T2 `docs/initial-adrs`** — ADRs 0001–0009 (list below). ADR-0009 is reviewed with Andrés before T2b.
 - [ ] **T2b `chore/devcontainer`** — implement the devcontainer per ADR-0009; measure startup time and resources.
 - [ ] **T3 `feat/api-skeleton`** — FastAPI, Pydantic v2, pydantic-settings; `GET /health` (liveness),
       `GET /health/ready` (DB ping); RFC 9457 error handler; JSON logs with `trace_id`/`tenant_id`;
