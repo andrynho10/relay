@@ -79,3 +79,6 @@
 - `check-json` no acepta JSONC: `devcontainer.json` está excluido de ese hook.
 - Abrir la carpeta del host en el contenedor comparte `.git/hooks`: los commits desde el host
   necesitan `pre-commit` en el PATH del host (`uv tool install pre-commit==4.6.2`).
+- Los volúmenes con nombre crean como root las carpetas padre que no existen en la imagen (p. ej.
+  `~/.cache`); por eso el Dockerfile crea los puntos de montaje con dueño `vscode`. Probar el
+  devcontainer siempre con los mismos volúmenes que `devcontainer.json`.

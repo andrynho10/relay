@@ -80,3 +80,15 @@ RUN case "${TARGETARCH}" in \
 # Install pre-commit as a uv tool outside any user's home so it survives volume mounts.
 RUN UV_TOOL_DIR=/usr/local/share/uv-tools UV_TOOL_BIN_DIR=/usr/local/bin \
       uv tool install --no-cache "pre-commit==${PRE_COMMIT_VERSION}"
+
+# Create the named-volume mount points (devcontainer.json) owned by the container user. Otherwise
+# Docker creates missing parents such as ~/.cache as root, and tools that write next to the
+# volumes (for example Go's build cache in ~/.cache/go-build) fail with "permission denied".
+# New, empty named volumes also inherit this ownership from the image.
+RUN install -d -o vscode -g vscode \
+      /home/vscode/.aws \
+      /home/vscode/.cache \
+      /home/vscode/.cache/uv \
+      /home/vscode/.cache/pre-commit \
+      /home/vscode/.config \
+      /home/vscode/.config/gh
