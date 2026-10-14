@@ -1,0 +1,17 @@
+# Normalize line endings: LF in the repo and in every working copy, including Windows hosts,
+# so files edited on the host and inside the devcontainer never differ by CRLF.
+* text=auto eol=lf
+
+# Binary files: never normalize or diff as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.docx binary
+*.woff binary
+*.woff2 binary
+*.zip  binary
+*.gz   binary

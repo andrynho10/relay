@@ -1,0 +1,65 @@
+# Secrets and local configuration — never committed (CLAUDE.md, SPEC §11).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# Terraform: state and plans hold infrastructure details and sometimes secrets.
+# .terraform.lock.hcl IS committed (pins provider versions and hashes).
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# Evals and red team run outputs (datasets are versioned; results are CI artifacts).
+evals/results/
+
+# Logs
+*.log
+logs/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
