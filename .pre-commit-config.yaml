@@ -16,6 +16,8 @@ repos:
       - id: check-yaml
         args: ["--allow-multiple-documents"]
       - id: check-json
+        # devcontainer.json is JSONC (comments allowed) and is validated by VS Code instead.
+        exclude: ^\.devcontainer/devcontainer\.json$
       - id: check-toml
       - id: detect-private-key
       - id: detect-aws-credentials

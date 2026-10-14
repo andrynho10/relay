@@ -53,7 +53,16 @@ Details in [SPEC §5](docs/SPEC.md) and the [architecture decision records](docs
 
 ## Running locally
 
-_Instructions land with the devcontainer and Docker Compose setup (Phase 0)._ Daily development is
+Requirements: Docker, VS Code and the Dev Containers extension; nothing else on the host
+([ADR-0009](docs/adr/0009-devcontainer.md)).
+
+1. In VS Code, run **Dev Containers: Clone Repository in Container Volume** and enter this repository's
+   URL. (Opening a local clone with **Reopen in Container** also works, with slower file access on
+   Windows and macOS.)
+2. The first build takes a few minutes; every tool comes pinned in the image.
+3. To sign commits from the container, see "Commit signing" in ADR-0009.
+
+`make dev` and `make check` arrive with the Docker Compose setup later in Phase 0. Daily development is
 fully local; only what cannot be emulated uses a temporary AWS `dev` environment.
 
 ## Cost
