@@ -67,3 +67,7 @@ at each milestone.
 - [Specification](docs/SPEC.md) — scope, architecture, security, milestones
 - [Phase plans](docs/plans/) and [progress](docs/PROGRESS.md)
 - [Architecture decision records](docs/adr/)
+
+## License
+
+[MIT](LICENSE) © 2026 Andrés Amaya Garcés
