@@ -5,11 +5,11 @@
 
 **Última actualización:** 2026-10-13
 **Fase actual:** 0 — Fundaciones · Plan: `docs/plans/phase-0.md` (aprobado y re-planificado por costo 2026-10-13)
-**Rama activa / PR abierto:** `docs/phase-0-plan-v2` (T0) — PR #2 (reemplaza al #1, bloqueado por un commit sin firma)
+**Rama activa / PR abierto:** `chore/repo-hygiene` (T1)
 
 ## Hecho en esta fase
 - Kickoff: resumen, riesgos y decisiones de SPEC §12 (devcontainer, repo público).
-- T0: plan de Fase 0 en `docs/plans/phase-0.md`.
+- T0: plan de Fase 0 en `docs/plans/phase-0.md` (PR #2, mergeado).
 - Re-planificación por costo: dos ambientes aplicados, staging efímero,
   seguridad mínima en CI, release manual, red sin NAT. SPEC v0.2 y CLAUDE.md ajustados.
 - Gestión de AWS documentada: modelo de cuenta, matriz de acceso, propósito de `dev`, secretos.
@@ -17,13 +17,14 @@
 - Ruleset básico de `main` aplicado (`main-protection`).
 
 ## En curso
-- Tarea: T0 — esperando revisión y squash merge del PR #2.
+- Tarea: T1 — `.gitattributes`, `.editorconfig`, `.gitignore`, `.dockerignore`, `.pre-commit-config.yaml`
+  y README hechos; los 16 hooks pasan (`uvx pre-commit@4.6.2 run --all-files`). Falta `.env.example`,
+  que crea Andrés (el agente tiene denegado `Read(./.env.*)`).
 
 ## Siguiente
-1. T1 `chore/repo-hygiene`.
-2. T2 `docs/initial-adrs` (0001–0009; ADR-0009 se revisa antes de T2b).
-3. Antes de T9: upgrade a plan pago, proyectos `dev`/`staging` con spend limit, Budgets 10/25/40 USD.
-4. Meta inmediata: cerrar el hito 1 (fases 0 + 1, release `v0.2.0`) lo antes posible.
+1. T2 `docs/initial-adrs` (0001–0009; ADR-0009 se revisa antes de T2b).
+2. Antes de T9: upgrade a plan pago, proyectos `dev`/`staging` con spend limit, Budgets 10/25/40 USD.
+3. Meta inmediata: cerrar el hito 1 (fases 0 + 1, release `v0.2.0`) lo antes posible.
 
 ## Decisiones recientes (no obvias en el código)
 - Hitos de CV (prioridad 1, en orden): 1 RAG demostrable (fases 0+1), 2 multi-tenant seguro, 3 agente
@@ -69,3 +70,6 @@
 - `python` en Git Bash resolvía al alias de la Microsoft Store: se movió `%LOCALAPPDATA%\Python\bin`
   antes de `WindowsApps` en el PATH de usuario (respaldo en `%TEMP%\user-path-backup-20261013.txt`).
   Requiere reiniciar terminales; `py` funciona siempre.
+- `core.autocrlf=true` en este host dejaba los archivos en CRLF en la copia de trabajo; `.gitattributes`
+  (`eol=lf`) lo corrige. Si un hook marca `mixed-line-ending`, es eso.
+- `pre-commit` no está en el host: usar `uvx pre-commit@4.6.2 run --all-files` hasta tener el devcontainer.

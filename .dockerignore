@@ -1,0 +1,32 @@
+# Keep build contexts small and free of secrets. Each Dockerfile copies only what it needs;
+# this file is the safety net for anything a broad COPY would otherwise pick up.
+.git
+.github
+.devcontainer
+.claude
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+docs/
+infra/
+evals/
+**/*.md
+
+**/__pycache__
+**/.venv
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/node_modules
+**/.next
+**/coverage
+**/playwright-report
+**/test-results
+**/.terraform
+**/*.tfstate*
+**/*.log
