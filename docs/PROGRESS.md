@@ -12,6 +12,8 @@
 - T0: plan de Fase 0 en `docs/plans/phase-0.md` (PR #2, mergeado).
 - T1: higiene del repo, pre-commit, README, `.env.example`, licencia MIT (PR #3, mergeado).
 - T2: ADRs 0001–0009 (PR #4, mergeado).
+- T2b: devcontainer con versiones fijadas y descargas verificadas; firma de commits desde el contenedor
+  verificada en GitHub; ADR-0009 aceptado (PR #5).
 - Re-planificación por costo: dos ambientes aplicados, staging efímero,
   seguridad mínima en CI, release manual, red sin NAT. SPEC v0.2 y CLAUDE.md ajustados.
 - Gestión de AWS documentada: modelo de cuenta, matriz de acceso, propósito de `dev`, secretos.
@@ -19,11 +21,11 @@
 - Ruleset básico de `main` aplicado (`main-protection`).
 
 ## En curso
-- Tarea: T2b — devcontainer hecho y probado fuera de VS Code (build, versiones, hooks, firma simulada).
-  Falta que Andrés lo abra en VS Code y haga un commit firmado (ver ADR-0009, "Commit signing").
+- Tarea: T2b — esperando revisión y squash merge del PR #5.
 
 ## Siguiente
-1. T3 `feat/api-skeleton`, después de cerrar T2b.
+1. T3 `feat/api-skeleton`. Pendientes de T2b que se verifican después: `aws login` en el contenedor
+   (spike de T9) y memoria con el stack completo (T6).
 2. Antes de T9: upgrade a plan pago, proyectos `dev`/`staging` con spend limit, Budgets 10/25/40 USD.
 3. Meta inmediata: cerrar el hito 1 (fases 0 + 1, release `v0.2.0`) lo antes posible.
 
@@ -73,7 +75,8 @@
   Requiere reiniciar terminales; `py` funciona siempre.
 - `core.autocrlf=true` en este host dejaba los archivos en CRLF en la copia de trabajo; `.gitattributes`
   (`eol=lf`) lo corrige. Si un hook marca `mixed-line-ending`, es eso.
-- `pre-commit` no está en el host: usar `uvx pre-commit@4.6.2 run --all-files` hasta tener el devcontainer.
+- `pre-commit` en el host: instalado con `uv tool install pre-commit==4.6.2` (necesario si se abre la
+  carpeta del host en el contenedor, porque `.git/hooks` es compartido).
 - VS Code copia el `.gitconfig` del host al devcontainer: sus rutas de Windows (`gpg.ssh.program`,
   clave de firma) rompen la firma dentro del contenedor salvo que se sobrescriban (ADR-0009).
 - `check-json` no acepta JSONC: `devcontainer.json` está excluido de ese hook.

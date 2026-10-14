@@ -13,4 +13,4 @@ Copy [`template.md`](template.md) to start a new one.
 | [0006](0006-primary-region.md) | Primary AWS region: the one assigned to the projects | Proposed |
 | [0007](0007-scope-and-cost.md) | Scope and cost: CV milestones and a USD 50/month budget | Accepted |
 | [0008](0008-aws-account-model.md) | AWS account model and access matrix | Proposed |
-| [0009](0009-devcontainer.md) | Reproducible development environment: devcontainer | Proposed |
+| [0009](0009-devcontainer.md) | Reproducible development environment: devcontainer | Accepted |

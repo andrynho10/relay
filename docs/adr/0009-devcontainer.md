@@ -1,6 +1,6 @@
 # ADR-0009: Reproducible development environment: devcontainer
 
-- **Status:** Proposed — reviewed by Andrés before T2b, accepted when T2b's measurements pass
+- **Status:** Accepted
 - **Date:** 2026-10-14
 - **Deciders:** Andrés Amaya Garcés
 
@@ -86,23 +86,19 @@ Dev Containers extension; nothing else installed on the host.
 
 ## Verification and revisit triggers
 
-T2b passes when:
-1. In a fresh clone opened in the devcontainer, `pre-commit run --all-files` passes.
-2. A commit made inside the container is signed and shows as verified on GitHub.
-3. `aws login --remote` gives temporary `dev` credentials (with the T9 spike).
-4. Startup time and peak memory with the full stack running are recorded in this ADR.
-
-Results so far (2026-10-14, `docker build` on the host, amd64):
-- Image builds in about 66 s from a pulled base image; size 3.4 GB, mostly the devcontainers base image.
-  All checksums and the AWS CLI PGP signature verify during the build.
+Verified in T2b (2026-10-14, Windows 11 host, amd64):
+- The image builds in about 66 s from a pulled base image; size 3.4 GB, mostly the devcontainers base
+  image. All checksums and the AWS CLI PGP signature verify during the build.
 - Tool versions in the image: Python 3.14.8, uv 0.12.21, Node 24.21.0 (npm 11.19.0), Terraform 1.16.4,
   AWS CLI 2.37.6, gh 2.101.0, pre-commit 4.6.2, GNU Make 4.4.1.
-- Criterion 1: `pre-commit run --all-files` passes inside the image on a fresh clone.
-- Signing mechanism, simulated without VS Code: with a copied `.gitconfig` containing the Windows paths,
-  an in-container agent with a temporary key and the `GIT_CONFIG_*` variables, `git commit` produced a
-  signature that git verifies as good (`%G?` = `G`). Criterion 2 still needs a real commit from VS Code
-  with the forwarded host agent, verified on GitHub.
-- Criterion 4 is measured in T6, when the full stack exists.
+- `post-create.sh` and `pre-commit run --all-files` pass inside the container, with the same named volumes
+  as `devcontainer.json` (including a volume created beforehand as root).
+- A commit made from VS Code inside the container, signed through the forwarded host ssh-agent, shows as
+  verified on GitHub (commit `93579e5`, reason `valid`).
 
-Revisit if signing through the forwarded agent cannot be made to work, or if the measured resources do
-not fit the host.
+Checked later, as part of other tasks; a failure there leads to a new ADR:
+- T9 spike: `aws login --remote` gives temporary `dev` credentials inside the container.
+- T6: startup time and peak memory with the full local stack running fit the recommended resources.
+
+Revisit if signing through the forwarded agent stops working, or if the measured resources do not fit
+the host.
