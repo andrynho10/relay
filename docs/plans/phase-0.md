@@ -45,8 +45,8 @@ with OIDC. Phase 0 is the first half of **milestone 1** (SPEC §10.0); the cash 
       no bypass. Required status checks are added in T13.
 
 ## Tasks (one branch + PR each)
-- [ ] **T0 `docs/phase-0-plan`** — this file; SPEC re-scoping; update `docs/PROGRESS.md` and CLAUDE.md.
-- [ ] **T1 `chore/repo-hygiene`** — `.gitignore`, `.dockerignore`, `.gitattributes` (force LF), `.editorconfig`,
+- [x] **T0 `docs/phase-0-plan`** — this file; SPEC re-scoping; update `docs/PROGRESS.md` and CLAUDE.md.
+- [x] **T1 `chore/repo-hygiene`** — `.gitignore`, `.dockerignore`, `.gitattributes` (force LF), `.editorconfig`,
       `.env.example` (includes `ANTHROPIC_API_KEY=` with no value and a comment pointing to the dev
       workspace), `.pre-commit-config.yaml` (gitleaks, ruff, ruff-format, prettier, terraform fmt, check-yaml),
       README template. Verify Anthropic workspace spend limits in the official docs.
