@@ -27,10 +27,12 @@ Las decisiones de arquitectura están en `docs/adr/`. No contradigas un ADR acep
 - IA: Claude API vía capa `LLMGateway` (modelos `claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`)
 - Embeddings: proveedor detrás de interfaz `Embedder` (ver ADR)
 - PII: Microsoft Presidio + reconocedores propios (determinístico, sin LLM)
-- Auth: WorkOS AuthKit (SSO/SCIM empresarial: Roadmap). Billing: Stripe (Roadmap)
-- Infra: AWS (ECS Fargate, RDS, SQS, S3, CloudFront, Secrets Manager, KMS; WAF: Roadmap), Terraform
-- Alcance: núcleo vs. Roadmap según la "línea de corte CV" (SPEC §10.0, ADR-0007). Nada de Roadmap
-  se implementa sin mi aprobación.
+- Auth: WorkOS AuthKit (SSO/SCIM: prioridad 2). Billing: Stripe en modo test (prioridad 2)
+- Infra: AWS (ECS Fargate, RDS, SQS, S3, CloudFront, Secrets Manager, KMS; WAF: prioridad 2), Terraform
+- Alcance: hitos de CV (SPEC §10.0, ADR-0007): terminar algo demostrable y luego escalar. La prioridad 2
+  (extensiones E1–E8) solo empieza cuando el hito en curso está cerrado y con mi aprobación.
+- Presupuesto: USD 50/mes en efectivo (SPEC §11). Antes de algo que gaste dinero (API, AWS), estima el
+  costo y dímelo.
 - CI/CD: GitHub Actions con OIDC hacia AWS (sin llaves de larga duración)
 - Observabilidad: OpenTelemetry, Sentry, trazas LLM en Langfuse
 - Local: Docker Compose replica todos los servicios

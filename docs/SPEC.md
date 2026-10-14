@@ -1,6 +1,6 @@
 # Relay — Especificación del sistema
 
-Versión 0.2 · Estado: Fase 0 · Re-planificada por costo el 2026-10-13 (ver §10.0 y ADR-0007)
+Versión 0.3 · Estado: Fase 0 · Organizada en hitos de CV y presupuesto de USD 50/mes el 2026-10-13 (ver §10.0, §11 y ADR-0007)
 
 ---
 
@@ -150,7 +150,7 @@ tiene su ADR con alternativas descartadas.
 | LLM | **Claude API (Anthropic)** detrás de `LLMGateway` | Acceso inmediato a modelos y funciones nuevas (prompt caching, batch); el gateway permite cambiar a Amazon Bedrock o Claude Platform on AWS si un cliente exige facturación o residencia en AWS (ADR) | Bedrock |
 | Embeddings | Modelo multilingüe vía **Amazon Bedrock** (p. ej. Cohere Embed) detrás de `Embedder` | Datos permanecen en la cuenta AWS, auth por IAM, buen desempeño en español | Voyage AI (ADR comparativo con evals propios) |
 | PII | **Microsoft Presidio** + reconocedores propios | Determinístico, auditable, testeable, open source | LLM para redacción (descartado) |
-| Identidad | **WorkOS** | SSO SAML/OIDC y SCIM: requisito típico de clientes empresariales. Núcleo: AuthKit en plan gratuito (verificar en la página de precios de WorkOS al iniciar Fase 2); SSO/SCIM con conexiones de producción: Roadmap (§10.0) | Amazon Cognito |
+| Identidad | **WorkOS** | SSO SAML/OIDC y SCIM: requisito típico de clientes empresariales. Prioridad 1: AuthKit en plan gratuito (verificar en la página de precios de WorkOS al iniciar Fase 2); SSO/SCIM en el entorno staging de WorkOS: Prioridad 2, E2 (§10.0) | Amazon Cognito |
 | Facturación | **Stripe Billing** (medidores de uso) | Estándar de industria para SaaS por uso | — |
 | Observabilidad | **OpenTelemetry** + Grafana Cloud, **Sentry**, **Langfuse** | OTel evita dependencia de proveedor; Langfuse especializado en trazas y costos LLM | Datadog (mejor integrado, costo alto para esta etapa) |
 | IaC | **Terraform** (estado remoto en S3 con bloqueo) | Estándar más pedido | CDK |
@@ -172,9 +172,9 @@ Marcos de referencia:
 Entregables obligatorios:
 - `docs/security/threat-model.md` (STRIDE por componente y por flujo de datos), actualizado por fase.
 - `docs/security/owasp-mapping.md`: cada riesgo OWASP LLM/Agentic → mitigación → test que la verifica.
-  Núcleo: los riesgos cubiertos por el núcleo; mapeo completo en Roadmap.
-- Suite `make redteam` en CI que bloquea el merge si falla. Núcleo: acceso cruzado entre tenants
-  (incluida búsqueda vectorial) + corpus pequeño de prompt injection; corpus completo en Roadmap.
+  Prioridad 1: los riesgos cubiertos por la prioridad 1; mapeo completo en Prioridad 2.
+- Suite `make redteam` en CI que bloquea el merge si falla. Prioridad 1: acceso cruzado entre tenants
+  (incluida búsqueda vectorial) + corpus pequeño de prompt injection; corpus completo en Prioridad 2.
 
 Controles mínimos:
 - **Aislamiento de tenants:** RLS en todas las tablas con datos de tenant (incluido pgvector);
@@ -191,11 +191,11 @@ Controles mínimos:
 - **Datos:** TLS 1.2+ en tránsito, cifrado KMS en reposo, PII redactada antes de proveedores y logs.
 - **Supply chain:** lockfiles, Dependabot, escaneo SAST (CodeQL), secretos (gitleaks),
   contenedores y dependencias (Trivy), imágenes base mínimas y no-root.
-  *Roadmap:* Semgrep, Checkov (IaC), SBOM en el build.
-- **DAST** *(Roadmap)*: OWASP ZAP baseline contra staging en el pipeline.
+  *Prioridad 2:* Semgrep, Checkov (IaC), SBOM en el build.
+- **DAST** *(Prioridad 2)*: OWASP ZAP baseline contra staging en el pipeline.
 - **Infra:** IAM de mínimo privilegio por servicio, subredes privadas para datos, security groups
   restrictivos, CloudTrail activo, sin acceso SSH (ECS Exec auditado si se necesita).
-  *Roadmap:* GuardDuty (tiene costo y no está disponible en los proyectos del plan pago sin
+  *Prioridad 2:* GuardDuty (tiene costo y no está disponible en los proyectos del plan pago sin
   funciones avanzadas).
 - **Auditoría:** log append-only de acciones de usuarios y del agente (quién, qué, cuándo, resultado).
 
@@ -203,10 +203,10 @@ Controles mínimos:
 
 ## 8. Confiabilidad, escalabilidad y observabilidad
 
-SLO del núcleo (medido en cada demo de staging y en los evals):
+SLO de prioridad 1 (medido en cada demo de staging y en los evals):
 - Latencia hasta el primer token: p95 ≤ 2 s.
 
-*Roadmap* (requieren un ambiente encendido de forma continua):
+*Prioridad 2* (se miden en una ventana de 7 días con staging encendido, ~USD 15–20 una sola vez):
 - Disponibilidad API: 99,9 % mensual con error budget.
 - Respuesta completa p95 ≤ 8 s; ingesta de un documento de 50 páginas p95 ≤ 2 min.
 
@@ -219,14 +219,14 @@ Resiliencia:
 
 Escalabilidad:
 - API y workers sin estado con autoescalado por CPU/cola.
-- *(Roadmap)* Prueba de carga con k6: reportar throughput máximo, punto de quiebre y cuello de botella.
+- *(Prioridad 2)* Prueba de carga con k6: reportar throughput máximo, punto de quiebre y cuello de botella.
 
-Observabilidad (núcleo; cabe en los planes gratuitos de Grafana Cloud y Langfuse, a verificar en sus ADRs):
+Observabilidad (prioridad 1; cabe en los planes gratuitos de Grafana Cloud y Langfuse, a verificar en sus ADRs):
 - Trazas distribuidas OTel de punta a punta (request → recuperación → LLM → herramienta).
 - Trazas LLM en Langfuse. Por llamada: modelo, tokens in/out/cache, costo, latencia, tenant.
 - Un dashboard: latencia (TTFT p95), costo por respuesta y por tenant, tasa de derivación a humano.
 - Una alerta accionable con su runbook enlazado (`docs/runbooks/`).
-- *Roadmap:* dashboards de SLO de disponibilidad y error budget, alertas adicionales.
+- *Prioridad 2:* dashboards de SLO de disponibilidad y error budget, alertas adicionales.
 
 ---
 
@@ -246,40 +246,52 @@ Observabilidad (núcleo; cabe en los planes gratuitos de Grafana Cloud y Langfus
 
 ---
 
-## 10. Fases y criterios de aceptación
+## 10. Fases, hitos y criterios de aceptación
 
 Cada fase termina con: tests verdes, evals sin regresión, docs actualizadas, demo grabable.
 
-### 10.0 Línea de corte CV
+### 10.0 Hitos de CV: terminar algo demostrable y luego escalar
 
-Objetivo: demostrar amplitud (IA, cloud, CI/CD, seguridad, observabilidad) con un costo AWS de pocos
-dólares al mes la mayor parte del tiempo. Detalle y justificación en ADR-0007.
+Objetivo: demostrar amplitud (IA, cloud, CI/CD, seguridad, observabilidad) con un estándar mínimo de
+producción y pocos dólares al mes (§11, ADR-0007), y tener algo mostrable en el CV lo antes posible.
 
-**Núcleo (se termina):**
-- RAG multi-tenant con RLS (incluida búsqueda vectorial), ingesta asíncrona con PII y respuestas con citas.
-- Triage con salidas estructuradas.
-- `LLMGateway` con registro de tokens, costo, latencia, modelo y tenant; degradación a "derivar a humano".
-- Autenticación con WorkOS AuthKit (plan gratuito; precio a verificar al iniciar Fase 2) y RBAC básico;
-  `tenant_id` siempre desde el token.
-- Observabilidad: trazas OTel de punta a punta (request → recuperación → LLM), trazas LLM en Langfuse,
-  un dashboard y una alerta con su runbook (planes gratuitos).
-- SLO de latencia: TTFT p95 ≤ 2 s, medido en cada demo.
-- Una herramienta sensible del agente (`issue_refund` contra un backend simulado) con política, límites
-  y aprobación humana.
-- Red team mínimo: acceso cruzado entre tenants + corpus pequeño de prompt injection, en CI.
-- Evals en CI que bloquean regresiones (subconjunto síncrono en PR; suite completa por Batch API, §9).
-- Demo en staging (aplicada bajo demanda) y video en el README.
+Filosofía:
+- El trabajo se organiza en **hitos**. Cada hito deja algo publicable: release etiquetado, sección del
+  README actualizada, video o GIF corto (≤ 90 s) de la demo en staging, y costo real medido.
+- **Prioridad 1** son los hitos, en orden. **Prioridad 2** son extensiones independientes que agrandan
+  lo ya demostrable; ninguna se empieza mientras el hito en curso no esté cerrado.
+- El hito 1 ya es postulable. Los hitos 2 y 3 cubren lo que más pesa para un CTO de SaaS B2B con IA
+  (aislamiento entre tenants y agentes seguros); son la meta mínima del proyecto.
+- Desde el hito 1, las tablas de datos llevan `tenant_id`, para que el hito 2 agregue RLS sin rehacer
+  el esquema.
 
-**Roadmap (diseñado y documentado, no comprometido):**
-WorkOS SSO/SCIM con conexiones de producción, Stripe Billing, servidor MCP y herramientas adicionales,
-WAF, GuardDuty, Multi-AZ, red team completo y `owasp-mapping.md` completo, producción aplicada,
-SLO de disponibilidad con error budget, k6, ZAP, Semgrep, Checkov, SBOM, release-please,
-caché semántico, demo pública abierta.
+**Prioridad 1 — hitos**
 
-Cada fase marca sus partes de Roadmap con *(Roadmap)*. Una fase se cierra cuando su núcleo cumple los
-criterios ✔; lo marcado *(Roadmap)* no bloquea el cierre.
+| Hito | Fases | Qué se puede mostrar | Release |
+|---|---|---|---|
+| 1. RAG demostrable | 0 + 1 | Subir documentos, preguntar y recibir respuestas en streaming con citas; costo y TTFT por respuesta; trazas en Langfuse; evals bloqueando en CI; deploy a staging con OIDC | `v0.2.0` |
+| 2. SaaS multi-tenant seguro | 2 | Login con WorkOS AuthKit, RBAC, RLS (incluida búsqueda vectorial), auditoría, suite de acceso cruzado en CI | `v0.3.0` |
+| 3. Agente con aprobación humana | 3 | Triage con salidas estructuradas, `issue_refund` con política y límites, bandeja de aprobaciones, red team mínimo en CI | `v0.4.0` |
+| 4. Economía medida | 4 | Enrutamiento Haiku/Sonnet/Opus guiado por evals, prompt caching, dashboard de costo por resolución | `v0.5.0` |
+| 5. Operación | 5 + 6 | Alerta con runbook, restauración probada, auditoría de accesibilidad, costo real, caso de estudio y postmortem | `v1.0.0` |
 
-**Fase 0 — Fundaciones**
+**Prioridad 2 — escalar** (orden sugerido por valor para el CV y costo; se elige al cerrar cada hito)
+
+| Extensión | Contenido | Costo estimado (a verificar al implementar) |
+|---|---|---|
+| E1. Cadena de suministro | Semgrep, Checkov, SBOM, release-please | USD 0 (Actions gratis en repo público) |
+| E2. Identidad empresarial | WorkOS SSO/SCIM en el entorno *staging* de WorkOS | USD 0 (conexiones de staging no se cobran) |
+| E3. Endurecimiento de staging | WAF, GuardDuty, RDS Multi-AZ como interruptores de Terraform; ZAP | Centavos por hora, solo con staging encendido; GuardDuty con prueba gratuita |
+| E4. Agente ampliado | Servidor MCP, más herramientas, red team completo, `owasp-mapping.md` completo | Centavos de API (Haiku como atacante y juez) |
+| E5. Facturación | Stripe Billing en modo test con medidores; margen sobre facturación | USD 0 |
+| E6. Carga y confiabilidad | k6; SLO de disponibilidad en una ventana de 7 días | ~USD 15–20, una sola vez |
+| E7. Caché semántico | Caché por similitud en Valkey | USD 0 local; centavos por hora en staging |
+| E8. Demo pública | Demo abierta con Haiku, límites estrictos y tope diario | Solo si el presupuesto de §11 lo permite |
+
+Fuera de alcance: producción aplicada. Existe en Terraform y se valida en CI; aplicarla duplicaría el
+costo sin demostrar nada que staging no demuestre.
+
+**Fase 0 — Fundaciones** *(hito 1)*
 Monorepo, flujo de git de §13 (ruleset de `main`, plantilla de PR, CODEOWNERS, pre-commit),
 devcontainer y Docker Compose local, CI (lint, tipos, tests, gitleaks, CodeQL, Trivy, Dependabot),
 Terraform para `dev`, `staging` y `prod` (este último solo validado), ADRs iniciales, threat model v1,
@@ -289,54 +301,66 @@ plantilla de README.
   vía Terraform y GitHub Actions con OIDC, por despliegue manual, con destroy probado.
   Así los problemas de infraestructura aparecen temprano y no al final.
 
-**Fase 1 — Núcleo RAG (un tenant)**
+**Fase 1 — Núcleo RAG, un tenant** *(hito 1)*
 Ingesta asíncrona con PII, búsqueda vectorial, chat con streaming y citas, `LLMGateway` con registro
 de costos, dataset de evals v1 (~50 casos) con subconjunto bloqueante en CI, trazas OTel de punta a
 punta, trazas LLM en Langfuse, dashboard de latencia y costo.
 ✔ Evals base publicados; costo y TTFT por respuesta visibles en el dashboard y en Langfuse.
+✔ Cierre del hito 1: release `v0.2.0`, README con la demo y su costo real.
 
-**Fase 2 — Multi-tenancy y seguridad de acceso**
+**Fase 2 — Multi-tenancy y seguridad de acceso** *(hito 2)*
 WorkOS AuthKit, RBAC, RLS en todas las tablas, auditoría, suite de acceso cruzado.
-*(Roadmap: SSO/SCIM empresarial.)*
 ✔ Ningún test de acceso cruzado logra leer datos de otro tenant (incluido vía búsqueda vectorial).
 
-**Fase 3 — Agente y acciones**
-Herramienta `issue_refund` con esquema y política, bandeja de aprobaciones, límites, red team mínimo.
-*(Roadmap: más herramientas, servidor MCP, red team completo, `owasp-mapping.md` completo.)*
-✔ 100% de los ataques del corpus mínimo bloqueados o contenidos; ninguna acción sensible sin aprobación.
+**Fase 3 — Agente, triage y acciones** *(hito 3)*
+Triage con salidas estructuradas (Haiku), herramienta `issue_refund` con esquema y política, bandeja
+de aprobaciones, límites, red team mínimo (acceso cruzado + corpus pequeño de prompt injection).
+✔ 100 % de los ataques del corpus mínimo bloqueados o contenidos; ninguna acción sensible sin aprobación.
 
-**Fase 4 — Economía**
+**Fase 4 — Economía** *(hito 4)*
 Enrutamiento Haiku/Sonnet/Opus guiado por evals, prompt caching, dashboard de costos.
-*(Roadmap: caché semántico, Stripe con medidores, margen sobre facturación real.)*
 ✔ Costo por resolución y reparto de tráfico por modelo medidos y reportados (cumplidos o con análisis de brecha).
 
-**Fase 5 — Staging de demo y operación**
+**Fase 5 — Operación** *(hito 5)*
 Staging completo aplicable bajo demanda, una alerta accionable con su runbook, prueba de restauración,
 auditoría de accesibilidad, costo real medido (en reposo y por hora encendido).
-*(Roadmap: producción aplicada, WAF, GuardDuty, Multi-AZ, k6, ZAP, SLO de disponibilidad en verde por 7 días.)*
 ✔ Restauración probada; alerta disparada y resuelta con su runbook en una demo; TTFT p95 medido;
   despliegue y destroy de staging documentados y repetibles.
 
-**Fase 6 — Portafolio**
+**Fase 6 — Portafolio** *(hito 5)*
 Video de 3 min de la demo en staging, README con diagrama, caso de estudio con métricas, al menos un
-postmortem real. *(Roadmap: demo pública abierta con límites estrictos.)*
+postmortem real.
 
 ---
 
 ## 11. Control de costos del propio proyecto
 
-- Meta: pocos dólares al mes la mayor parte del tiempo (ADR-0007).
+- Presupuesto en efectivo: **USD 50 al mes** hasta fin de 2026 (~USD 125 en total), Anthropic + AWS.
+  Los créditos de AWS (USD 100 + hasta 100 por actividades) se consumen antes que el efectivo; la API de
+  Anthropic no está cubierta por ellos y es el gasto real esperado.
+
+  | Partida | Tope mensual | Control |
+  |---|---|---|
+  | Anthropic, workspace `dev` | USD 10 | Límite de gasto del workspace |
+  | Anthropic, workspace `ci` (evals) | USD 10 | Límite propio, para que un eval descontrolado no deje sin API al desarrollo |
+  | Anthropic, workspace `staging` (demos) | USD 5 | Límite propio |
+  | AWS | USD 25 de reserva | Créditos primero; alertas sobre costo bruto |
+
+- Meta de costo AWS: ~USD 1–2 al mes en reposo; las demos se miden por hora encendida (ADR-0007).
 - Dos ambientes aplicados: `dev` y `staging`. `prod` existe en Terraform y se valida en CI, pero nunca
-  se aplica (Roadmap).
+  se aplica (fuera de alcance: duplicar staging no demuestra nada nuevo y duplica el costo).
 - `staging` es efímero: se aplica para demos y pruebas por despliegue manual y se destruye después
-  con un workflow de destroy.
+  con un workflow de destroy, que además corre **cada noche** por `schedule`. Olvidar staging encendido
+  cuesta como máximo un día (~USD 2).
 - `dev` no tiene recursos permanentes: lo que se crea ahí se destruye después de usarlo (§13).
-- Controles de gasto AWS: AWS Budgets con alertas en 5, 10 y 20 USD. Mientras se usen proyectos sin
-  funciones avanzadas, además *spend limit* por proyecto. Con funciones avanzadas (§13) el spend limit
-  desaparece y se reemplaza por una *Budget action* que aplica una política de denegación al llegar a
-  20 USD (a verificar en T9) + Cost Anomaly Detection.
-- API key de Anthropic: una por ambiente, cada una en su propio workspace de la consola de Anthropic
-  con su propio límite de gasto (a verificar en T1). Desarrollo: `.env` local (en `.gitignore`;
+- Controles de gasto AWS: AWS Budgets sobre el **costo bruto** (antes de créditos, para ver cuánto se
+  consume) con alertas en 10, 25 y 40 USD. Mientras se usen proyectos sin funciones avanzadas, además
+  *spend limit* por proyecto. Con funciones avanzadas (§13) el spend limit desaparece y se reemplaza por:
+  una *Budget action* que aplica una política de denegación al llegar a 45 USD (a verificar en T9),
+  Cost Anomaly Detection, y un **SCP propio de costo** que deniega servicios caros que el proyecto no usa
+  (p. ej. instancias EC2 grandes o GPU, SageMaker) y regiones fuera de la asignada.
+- API key de Anthropic: una por ambiente (`dev`, `ci`, `staging`), cada una en su propio workspace de la
+  consola de Anthropic con el límite de la tabla anterior (a verificar en T1). Desarrollo: `.env` local (en `.gitignore`;
   `.env.example` documenta la variable). Staging: Secrets Manager, creado en `infra/bootstrap` (no en
   `envs/staging`) para que sobreviva a cada destroy y su valor nunca esté en el estado de Terraform;
   el valor lo carga Andrés con `aws secretsmanager put-secret-value`.
@@ -383,10 +407,11 @@ Plataforma: **GitHub** (repositorio, PRs, Actions, Dependabot, escaneo de códig
 - **SemVer** (`v0.x.y` durante el desarrollo; `v1.0.0` al cerrar Fase 5).
 - Tags por fase: `v0.1.0` = Fase 0, `v0.2.0` = Fase 1, etc.
 - Release manual al cerrar cada fase: tag firmado + GitHub Release con notas escritas
-  (`gh release create`). *Roadmap:* `CHANGELOG.md` generado con release-please.
+  (`gh release create`). *Prioridad 2:* `CHANGELOG.md` generado con release-please.
 - Imágenes de contenedor etiquetadas con el SHA del commit y la versión; nunca `latest` en entornos.
-- Despliegue: `staging` por `workflow_dispatch` (no en cada merge, porque es efímero) y destroy por
-  otro workflow manual; ambos usan el GitHub Environment `staging`. *Roadmap:* producción desde un
+- Despliegue: `staging` por `workflow_dispatch` (no en cada merge, porque es efímero). Destroy por otro
+  workflow, manual y también **programado cada noche** (si se olvida apagar staging, no pasa de un
+  día); ambos usan el GitHub Environment `staging`. *Fuera de alcance:* producción desde un
   release con aprobación manual.
 
 ### Qué más se versiona (y cómo)

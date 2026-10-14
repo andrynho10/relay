@@ -1,22 +1,23 @@
 # Phase 0 — Foundations
 
-Status: **approved 2026-10-13 · re-scoped for cost 2026-10-13** · Spec: `docs/SPEC.md` §10, §11, §13 ·
+Status: **approved 2026-10-13 · re-scoped into CV milestones and a USD 50/month budget 2026-10-13** · Spec: `docs/SPEC.md` §10, §11, §13 ·
 Target release: `v0.1.0` (manual)
 
 ## Goal
 Monorepo, git workflow, reproducible local environment, CI with baseline security scans, Terraform for
 `dev`, `staging` and `prod` (prod validated only), initial ADRs, threat model v1, and a **walking skeleton**
 (`/health` + minimal page) deployed on demand to an ephemeral staging via Terraform and GitHub Actions
-with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
+with OIDC. Phase 0 is the first half of **milestone 1** (SPEC §10.0); the cash budget is USD 50/month
+(SPEC §11, ADR-0007).
 
 ## Decisions taken at kickoff and re-scoping
 | Topic | Decision |
 |---|---|
-| Scope | "CV cut line" core vs. Roadmap (SPEC §10.0, ADR-0007) |
+| Scope | CV milestones: finish something demonstrable, then scale. Priority 1 = milestones 1–5 in order; priority 2 = independent extensions E1–E8, started only after a milestone closes (SPEC §10.0, ADR-0007) |
 | AWS account | New account experience, paid plan, projects `dev` and `staging` (each an AWS account in an AWS-managed organization). The managed SCP denies `iam:*Provider*`, so the GitHub OIDC provider cannot be created; if the T9 spike confirms it, **advanced features are activated** (irreversible; projects become member accounts we administer; spend limits are removed). Other triggers: Identity Center for another person, GuardDuty/Security Hub (ADR-0008) |
 | Access | `dev`: Andrés + agent, temporary credentials only (`aws login`) from the devcontainer. `staging`: GitHub Actions via OIDC only; the deploy role trusts only this repo and the `staging` GitHub Environment. `prod`: no project, no credentials. Single exception: `infra/bootstrap`, run once per project with Andrés's credentials |
 | Environments | Daily development is 100 % local (Docker Compose). `dev` only for what cannot be emulated locally (Bedrock embeddings, testing a Terraform module before staging); everything created there is destroyed after use. `staging` applied on demand. `prod` in Terraform, `validate` only, never applied |
-| Budget | AWS Budgets alerts at 5, 10 and 20 USD; spend limits while on plain projects; after advanced features, a Budget action that applies a deny policy at 20 USD (to verify) + Cost Anomaly Detection; staging destroyed when idle |
+| Budget | USD 50/month cash until end of 2026: Anthropic workspaces `dev` 10, `ci` 10, `staging` 5; AWS 25 in reserve (credits used first). AWS Budgets on gross cost with alerts at 10, 25 and 40 USD; spend limits while on plain projects; after advanced features, a Budget action that applies a deny policy at 45 USD (to verify), Cost Anomaly Detection and a custom cost SCP; staging destroyed when idle and every night |
 | Secrets | Anthropic API key per environment, each in its own Anthropic workspace with its own spend limit. Dev: local `.env` (gitignored). Staging: Secrets Manager secret created in `infra/bootstrap` (survives destroys, value never in Terraform state), value set by Andrés |
 | AWS region | The region AWS assigns to the projects from the contact country (`us-east-2` expected for the Americas; confirmed in the T9 spike) (ADR-0006) |
 | Local dev environment | Devcontainer; "clean machine" = Docker + VS Code + Dev Containers only (ADR-0009) |
@@ -31,11 +32,12 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
       Windows `ssh-keygen` (commits from the agent's non-interactive shell fail without it).
 - [ ] GitHub: enable secret scanning + push protection; create the `staging` environment (before T11).
 - [ ] Install the VS Code Dev Containers extension (before T2b).
-- [ ] Anthropic console: one workspace + API key per environment (`dev`, `staging`), each with a spend limit.
+- [ ] Anthropic console: one workspace + API key per environment, each with a spend limit: `dev` USD 10,
+      `ci` USD 10, `staging` USD 5.
 - [ ] **Just before T9:** upgrade the AWS account to the paid plan; create projects `dev` and `staging`
-      with a spend limit each; create AWS Budgets alerts at 5, 10 and 20 USD.
+      with a spend limit each; create AWS Budgets on gross cost with alerts at 10, 25 and 40 USD.
 - [ ] **After the T9 spike, if the OIDC block is confirmed:** activate advanced features (irreversible),
-      then the Budget action at 20 USD and Cost Anomaly Detection.
+      then the Budget action at 45 USD, Cost Anomaly Detection and the custom cost SCP (T9).
 - [ ] Run `infra/bootstrap` once per project (`dev`, `staging`) following the runbook, and load the
       staging Anthropic key with `aws secretsmanager put-secret-value`.
 - [x] Baseline `main` ruleset `main-protection` applied 2026-10-13 (id 25035606): no deletion, no force
@@ -63,8 +65,8 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
 - [ ] **T7 `ci/pipeline`** — `ci.yml` (ruff, mypy --strict, pytest, integration with service containers,
       eslint, tsc, Playwright + axe, image builds); `security.yml` with the baseline only: **gitleaks, CodeQL,
       Trivy (fs + image), Dependabot**; CODEOWNERS; PR template. Actions pinned by SHA.
-      Semgrep, Checkov and SBOM → Roadmap.
-- ~~**T8 `ci/release-please`**~~ — moved to Roadmap. The `v0.1.0` release is created manually in T13.
+      Semgrep, Checkov and SBOM → priority 2 (E1).
+- ~~**T8 `ci/release-please`**~~ — moved to priority 2 (E1). The `v0.1.0` release is created manually in T13.
       (Task numbers are kept so references stay valid.)
 - [ ] **T9 `feat/infra-bootstrap`** — **starts with a spike**, in this order; results go into ADR-0008:
       1. **Temporary credentials for `dev` inside the devcontainer** with `aws login --remote --profile relay-dev`
@@ -76,8 +78,10 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
          policy and an S3 state bucket (`use_lockfile`).
       3. **Region** actually assigned to the projects (AWS Settings → Project → Additional info) → ADR-0006.
       4. If the block is confirmed: Andrés activates advanced features (irreversible; removes spend limits),
-         then verify in the docs and create the Budget action that applies a deny policy at 20 USD, plus Cost
-         Anomaly Detection. Re-check that `aws login` still works for `dev` afterwards.
+         then verify in the docs and create the Budget action that applies a deny policy at 45 USD, Cost
+         Anomaly Detection, and a custom **cost SCP** denying expensive services the project does not use
+         (large/GPU EC2 instances, SageMaker) and regions other than the assigned one. Re-check that
+         `aws login` still works for `dev` afterwards.
       5. Terraform providers pin `allowed_account_ids` per environment, so that choosing the wrong session on
          the "Choose AWS sessions" page cannot apply to the wrong project.
       **If anything else is blocked, stop and ask.** Then: `infra/bootstrap` (state bucket, OIDC provider,
@@ -93,7 +97,8 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
       Stop and ask if this grows.
 - [ ] **T11 `ci/deploy-staging`** — `deploy-staging.yml` on **`workflow_dispatch`** (not on every merge):
       build → push to ECR (tag = SHA) → `terraform apply` (staging, OIDC) → smoke test `/health/ready` and the
-      page through CloudFront. `destroy-staging.yml` on `workflow_dispatch`. Both use the `staging`
+      page through CloudFront. `destroy-staging.yml` on `workflow_dispatch` **and on a nightly `schedule`**
+      (a forgotten staging costs at most one day). Both use the `staging`
       GitHub Environment. Runbook `docs/runbooks/staging.md` (deploy, destroy, cost check).
 - [ ] **T12 `docs/threat-model-v1`** — STRIDE per component and data flow, with planned mitigations per phase,
       including the no-NAT network, the account model and access matrix, and the bootstrap exception
@@ -111,7 +116,7 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
 | 0004 | PostgreSQL + pgvector + RLS as the single database | T2 |
 | 0005 | ECS Fargate for compute | T2 |
 | 0006 | Primary region = the one AWS assigns to the projects (`us-east-2` expected) | T2 as *Proposed*, *Accepted* after the T9 spike |
-| 0007 | **Scope and cost**: CV cut line, two applied environments, ephemeral staging, budgets, measured cost | T2 |
+| 0007 | **Scope and cost**: CV milestones (priority 1/2), USD 50/month budget split, two applied environments, ephemeral staging with nightly destroy, measured cost | T2 |
 | 0008 | **AWS account model**: `dev`/`staging` projects in an AWS-managed organization; access matrix; bootstrap exception; advanced features activated when the OIDC block is confirmed (or for Identity Center / GuardDuty / Security Hub), with the cost-control trade-off | T2 as *Proposed*, *Accepted* after the T9 spike |
 | 0009 | Devcontainer (Windows file performance, GitHub and AWS `dev` auth inside the container, Docker resources) | T2 |
 | 0010 | **Network without NAT Gateway** (public-subnet Fargate + strict SGs; VPC endpoints rejected on cost) | T10 |
@@ -125,8 +130,10 @@ with OIDC. AWS cost stays at a few dollars a month most of the time (ADR-0007).
   returns 200 against real RDS. No long-lived AWS keys in GitHub.
 - Manual destroy of staging succeeds and leaves only the bootstrap resources; **idle cost and hourly
   cost while up are measured** and recorded in PROGRESS.
-- Budgets alerts (5/10/20 USD) active, plus the Budget action at 20 USD and Cost Anomaly Detection if
-  advanced features were activated (spend limits otherwise).
+- Budgets alerts (10/25/40 USD on gross cost) active, plus the Budget action at 45 USD, Cost Anomaly
+  Detection and the cost SCP if advanced features were activated (spend limits otherwise); Anthropic
+  workspace limits set.
+- The nightly destroy of staging has run at least once and left only the bootstrap resources.
 - `aws login` works for `dev` inside the devcontainer; no long-lived AWS keys exist anywhere.
 - A test fails if any route does not declare its authorization.
 - Migration 0001 runs `upgrade` and `downgrade` in CI.
